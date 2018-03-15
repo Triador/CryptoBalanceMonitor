@@ -1,15 +1,14 @@
 package bittrex;
 
+import Utils.Properties;
+
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.SocketException;
 import java.net.URL;
 import java.net.UnknownHostException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Scanner;
+import java.util.*;
 
 import javax.net.ssl.HttpsURLConnection;
 
@@ -34,68 +33,25 @@ public class Bittrex {
         this.secret = secret;
         this.retryAttempts = retryAttempts;
         this.retryDelaySeconds = retryDelaySeconds;
-
         retryAttemptsLeft = retryAttempts;
-
     }
-
-
 
     public Bittrex(int retryAttempts, int retryDelaySeconds) {
 
-
-
         this.retryAttempts = retryAttempts;
-
         this.retryDelaySeconds = retryDelaySeconds;
-
-
-
         retryAttemptsLeft = retryAttempts;
-
     }
-
-
 
     public Bittrex() {
-
-
-
         this(DEFAULT_RETRY_ATTEMPTS, DEFAULT_RETRY_DELAY);
-
     }
 
+    public void setAuthKeysFromProperties() {
 
-
-    public void setAuthKeysFromTextFile(String textFile) { // Add the text file containing the key & secret in the same path as the source code
-
-
-
-        try (Scanner scan = new Scanner(getClass().getResourceAsStream(textFile))) {
-
-
-
-            String apikeyLine = scan.nextLine(), secretLine = scan.nextLine();
-
-
-
-            apikey = apikeyLine.substring(apikeyLine.indexOf("\"") + 1, apikeyLine.lastIndexOf("\""));
-
-            secret = secretLine.substring(secretLine.indexOf("\"") + 1, secretLine.lastIndexOf("\""));
-
-
-
-        } catch (NullPointerException | IndexOutOfBoundsException e) {
-
-
-
-            System.err.println("Text file not found or corrupted - please attach key & secret in the format provided.");
-
-        }
-
+        secret = Properties.getPropertyValue("bittrexSeckey");
+        apikey = Properties.getPropertyValue("bittrexPubkey");
     }
-
-
 
     public String getMarkets() { // Returns all markets with their metadata
 

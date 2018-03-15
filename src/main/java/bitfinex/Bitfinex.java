@@ -1,5 +1,6 @@
 package bitfinex;
 
+import Utils.CryptoUtils;
 import Utils.Properties;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
@@ -64,42 +65,6 @@ public class Bitfinex {
         this.pubkey = pubkey;
     }
 
-    private String getAuthenticationSignature(URI address, String nonce, JsonObject body) {
-        StringBuilder message = new StringBuilder("/api")
-                .append(address.getPath())
-                .append(nonce);
-
-        if (!body.isJsonNull()) {
-            message.append(body);
-        }
-
-        try {
-            Mac hmac = Mac.getInstance("HmacSHA384");
-            Charset charset = StandardCharsets.US_ASCII;
-
-            hmac.init(new SecretKeySpec(this.seckey.getBytes(charset), "HmacSHA384"));
-
-            return Hex.encodeHexString(
-                    hmac.doFinal(message.toString().getBytes(charset)));
-        } catch (NoSuchAlgorithmException | InvalidKeyException e) {
-            throw new RuntimeException();
-        }
-    }
-
-    private Collection<Header> getAuthenticationHeaders(URI address, JsonObject body, Charset charset) {
-        String nonce = Long.toString(
-                Instant.now().toEpochMilli()
-        );
-
-        Collection<Header> headers = new ArrayList<>();
-
-        headers.add(new BasicHeader("bfx-nonce", nonce));
-        headers.add(new BasicHeader("bfx-apikey", this.pubkey));
-        headers.add(new BasicHeader("bfx-signature", this.getAuthenticationSignature(address, nonce, body)));
-
-        return Collections.unmodifiableCollection(headers);
-    }
-
     public JsonArray post(String endpoint) {
         return this.post(endpoint, Collections.<NameValuePair>emptyList());
     }
@@ -134,7 +99,7 @@ public class Bitfinex {
                     .addHeader(HttpHeaders.ACCEPT, "application/json");
 
             if (endpoint.toLowerCase().startsWith("/v2/auth")) {
-                this.getAuthenticationHeaders(address, body, charset).forEach(request::addHeader);
+                CryptoUtils.getAuthenticationHeaders(address, body, charset, this.pubkey, this.seckey).forEach(request::addHeader);
             }
 
             if (body.isJsonNull()) {
