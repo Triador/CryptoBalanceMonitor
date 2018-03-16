@@ -1,11 +1,9 @@
 package hibtc;
 
-import Utils.CryptoUtils;
-import Utils.Properties;
-import bitfinex.Bitfinex;
-import com.google.gson.JsonArray;
+import Utils.PropertyHandler;
 import com.google.gson.JsonObject;
-import com.google.gson.JsonParser;
+import org.apache.commons.codec.binary.Hex;
+import org.apache.http.Header;
 import org.apache.http.HttpHeaders;
 import org.apache.http.NameValuePair;
 import org.apache.http.client.HttpClient;
@@ -14,14 +12,20 @@ import org.apache.http.client.utils.URIBuilder;
 import org.apache.http.entity.ByteArrayEntity;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
+import org.apache.http.message.BasicHeader;
 import org.apache.http.message.BasicNameValuePair;
 import org.apache.http.util.EntityUtils;
 
+import javax.crypto.Mac;
+import javax.crypto.spec.SecretKeySpec;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
+import java.security.InvalidKeyException;
+import java.security.NoSuchAlgorithmException;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -34,8 +38,8 @@ public class HitBTC {
     public HitBTC(HttpClient client) {
         this (
                 client,
-                Properties.getPropertyValue("bitfinexSeckey"),
-                Properties.getPropertyValue("bitfinexPubkey")
+                PropertyHandler.getInstance().getValue("hitBTCPubkey"),
+                PropertyHandler.getInstance().getValue("hitBTCSeckey")
         );
     }
 
@@ -57,44 +61,48 @@ public class HitBTC {
         this.pubkey = pubkey;
     }
 
-    public JsonArray post(String endpoint) {
+    public String post(String endpoint) {
         return this.post(endpoint, Collections.<NameValuePair>emptyList());
     }
 
-    public JsonArray post(String endpoint, Collection<NameValuePair> parameters) {
+    public String post(String endpoint, Collection<NameValuePair> parameters) {
         return this.post(endpoint, parameters, new JsonObject());
     }
 
-    public JsonArray post(String endpoint, JsonObject body) {
+    public String post(String endpoint, JsonObject body) {
         return this.post(endpoint, Collections.<NameValuePair>emptyList(), body, StandardCharsets.UTF_8);
     }
 
-    public JsonArray post(String endpoint, Collection<NameValuePair> parameters, JsonObject body) {
+    public String post(String endpoint, Collection<NameValuePair> parameters, JsonObject body) {
         return this.post(endpoint, parameters, body, StandardCharsets.UTF_8);
     }
 
-    public JsonArray post(String endpoint, JsonObject body, Charset charset) {
+    public String post(String endpoint, JsonObject body, Charset charset) {
         return this.post(endpoint, Collections.<NameValuePair>emptyList(), body, StandardCharsets.UTF_8);
     }
 
-    public JsonArray post(String endpoint, Collection<NameValuePair> parameters, JsonObject body, Charset charset) {
+    public String post(String endpoint, Collection<NameValuePair> parameters, JsonObject body, Charset charset) {
         try {
+                        String nonce = Long.toString(
+                    Instant.now().toEpochMilli()
+            );
+//            request.addParameter("pubkey", this.pubkey);
+//            request.addParameter("seckey", this.seckey);
             URI address = new URIBuilder()
                     .setScheme("https")
                     .setHost("api.hitbtc.com")
                     .setPath(endpoint)
+                    .setParameter("nonce", nonce)
+                    .setParameter("pubkey", this.pubkey)
+                    .setParameter("seckey", this.seckey)
                     .build();
 
             RequestBuilder request = RequestBuilder
-                    .post(address)
+                    .get(address)
                     .setCharset(charset)
                     .addHeader(HttpHeaders.ACCEPT, "application/json");
 
-            if (!endpoint.toLowerCase().startsWith("/2/public")) {
-                CryptoUtils.getAuthenticationHeaders(address, body, charset, this.pubkey, this.seckey).forEach(request::addHeader);
-            }
-
-            if (body.isJsonNull()) {
+            if (body.entrySet().isEmpty()) {
                 request.setEntity(new ByteArrayEntity(new byte[0]));
             } else {
                 request.setEntity(new ByteArrayEntity(body.toString().getBytes(charset)));
@@ -107,9 +115,12 @@ public class HitBTC {
                 ));
             }
 
-            return new JsonParser().parse(EntityUtils.toString(
+//            return new JsonParser().parse(EntityUtils.toString(
+//                    this.client.execute(request.build()).getEntity()
+//            )).getAsJsonArray();
+            return EntityUtils.toString(
                     this.client.execute(request.build()).getEntity()
-            )).getAsJsonArray();
+            );
         } catch (IOException | URISyntaxException e) {
             throw new RuntimeException();
         }
@@ -118,7 +129,7 @@ public class HitBTC {
     public static void main(String[] args) {
         try (CloseableHttpClient client = HttpClients.createDefault()) {
             HitBTC example = new HitBTC(client);
-            System.out.println(example.post("/2/account/balance"));
+            System.out.println(example.post("/api/2/account/balance"));
         } catch (IOException ex) {
             System.err.println(ex.getLocalizedMessage());
         }

@@ -1,7 +1,6 @@
 package bitfinex;
 
-import Utils.CryptoUtils;
-import Utils.Properties;
+import Utils.PropertyHandler;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
@@ -16,7 +15,6 @@ import org.apache.http.entity.ByteArrayEntity;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
 import org.apache.http.message.BasicHeader;
-import org.apache.http.message.BasicNameValuePair;
 import org.apache.http.util.EntityUtils;
 
 import javax.crypto.Mac;
@@ -42,8 +40,8 @@ public class Bitfinex {
     public Bitfinex(HttpClient client) {
         this (
                 client,
-                Properties.getPropertyValue("bitfinexSeckey"),
-                Properties.getPropertyValue("bitfinexPubkey")
+                PropertyHandler.getInstance().getValue("bitfinexSeckey"),
+                PropertyHandler.getInstance().getValue("bitfinexPubkey")
         );
     }
 
@@ -99,10 +97,10 @@ public class Bitfinex {
                     .addHeader(HttpHeaders.ACCEPT, "application/json");
 
             if (endpoint.toLowerCase().startsWith("/v2/auth")) {
-                CryptoUtils.getAuthenticationHeaders(address, body, charset, this.pubkey, this.seckey).forEach(request::addHeader);
+                getAuthenticationHeaders(address, body, charset).forEach(request::addHeader);
             }
 
-            if (body.isJsonNull()) {
+            if (body.entrySet().isEmpty()) {
                 request.setEntity(new ByteArrayEntity(new byte[0]));
             } else {
                 request.setEntity(new ByteArrayEntity(body.toString().getBytes(charset)));
@@ -123,35 +121,41 @@ public class Bitfinex {
         }
     }
 
-    public static void main(String[] args) {
-        try (CloseableHttpClient client = HttpClients.createDefault()) {
-            Bitfinex example = new Bitfinex(client);
+    private String getAuthenticationSignature(URI address, String nonce, JsonObject body) {
 
-            // Get active orders.
-            System.out.println(example.post("/v2/auth/r/orders"));
+        StringBuilder message = new StringBuilder("/api")
+                .append(address.getPath())
+                .append(nonce);
 
-            // Get account funding info.
-            JsonObject payload = new JsonObject();
-
-            payload.addProperty("dir", 1);
-            payload.addProperty("rate", 800);
-            payload.addProperty("type", "EXCHANGE");
-            payload.addProperty("symbol", "tBTCUSD");
-
-            System.out.println(example.post("/v2/auth/r/info/funding/fUSD", payload));
-
-            // Calculate the average execution rate for Trading or Margin funding.
-            Collection<NameValuePair> parameters = new ArrayList<>();
-
-            parameters.add(new BasicNameValuePair("symbol", "tBTCUSD"));
-            parameters.add(new BasicNameValuePair("amount", "1.123"));
-
-            System.out.println(example.post("/v2/calc/trade/avg", parameters));
-
-            System.out.println(example.post("/v2/auth/r/wallets"));
-        } catch (IOException ex) {
-            System.err.println(ex.getLocalizedMessage());
+        if (!body.entrySet().isEmpty()) {
+            message.append(body);
         }
+
+        try {
+            Mac hmac = Mac.getInstance("HmacSHA384");
+            Charset charset = StandardCharsets.US_ASCII;
+
+            hmac.init(new SecretKeySpec(this.seckey.getBytes(charset), "HmacSHA384"));
+
+            return Hex.encodeHexString(
+                    hmac.doFinal(message.toString().getBytes(charset)));
+        } catch (NoSuchAlgorithmException | InvalidKeyException e) {
+            throw new RuntimeException();
+        }
+    }
+
+    private Collection<Header> getAuthenticationHeaders(URI address, JsonObject body, Charset charset) {
+        String nonce = Long.toString(
+                Instant.now().toEpochMilli()
+        );
+
+        Collection<Header> headers = new ArrayList<>();
+
+        headers.add(new BasicHeader("bfx-nonce", nonce));
+        headers.add(new BasicHeader("bfx-apikey", this.pubkey));
+        headers.add(new BasicHeader("bfx-signature", getAuthenticationSignature(address, nonce, body)));
+
+        return Collections.unmodifiableCollection(headers);
     }
 
 }

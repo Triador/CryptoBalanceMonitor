@@ -1,6 +1,10 @@
 package bittrex;
 
-import Utils.Properties;
+import Utils.PropertyHandler;
+import com.binance.api.client.domain.account.AssetBalance;
+import com.google.gson.JsonArray;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -45,12 +49,8 @@ public class Bittrex {
 
     public Bittrex() {
         this(DEFAULT_RETRY_ATTEMPTS, DEFAULT_RETRY_DELAY);
-    }
-
-    public void setAuthKeysFromProperties() {
-
-        secret = Properties.getPropertyValue("bittrexSeckey");
-        apikey = Properties.getPropertyValue("bittrexPubkey");
+        secret = PropertyHandler.getInstance().getValue("bittrexSeckey");
+        apikey = PropertyHandler.getInstance().getValue("bittrexPubkey");
     }
 
     public String getMarkets() { // Returns all markets with their metadata
@@ -205,12 +205,21 @@ public class Bittrex {
 
 
 
-    public String getBalances() { // Returns all balances in your account
+    public List<AssetBalance> getBalances() { // Returns all balances in your account
 
+        String balance = getJson(API_VERSION, ACCOUNT, "getbalances");
+        List<AssetBalance> assetBalances = new ArrayList<>();
+        JsonObject jsonAllData = new JsonParser().parse(balance).getAsJsonObject();
+        JsonArray jsonResult = jsonAllData.get("result").getAsJsonArray();
+        for (int i = 0; i < jsonResult.size(); i++) {
+            JsonObject jsonAsset = jsonResult.get(i).getAsJsonObject();
+            AssetBalance assetBalance = new AssetBalance();
+            assetBalance.setAsset(jsonAsset.get("Currency").getAsString());
+            assetBalance.setFree(jsonAsset.get("Available").getAsString());
+            assetBalance.setLocked(jsonAsset.get("Pending").getAsString());
+        }
 
-
-        return getJson(API_VERSION, ACCOUNT, "getbalances");
-
+        return assetBalances;
     }
 
 
