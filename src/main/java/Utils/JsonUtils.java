@@ -1,5 +1,6 @@
 package Utils;
 
+import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
@@ -22,13 +23,20 @@ public class JsonUtils {
         return jsonObject;
     }
 
-    public static JsonObject convertStringToJson(String jsonString) {
+    public static JsonObject convertStringToJsonObject(String jsonString) {
         JsonParser jsonParser = new JsonParser();
         if (jsonString.startsWith("{")) {
             return jsonParser.parse(jsonString).getAsJsonObject();
         }
         else if (jsonString.startsWith("[")) {
             return jsonParser.parse(jsonString).getAsJsonArray().get(0).getAsJsonObject();
+        }
+        else return null;
+    }
+
+    public static JsonArray converStringToJsonArray(String jsonString) {
+        if (jsonString.startsWith("[")) {
+            return new JsonParser().parse(jsonString).getAsJsonArray();
         }
         else return null;
     }

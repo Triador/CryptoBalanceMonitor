@@ -9,6 +9,7 @@ import com.google.gson.JsonParser;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.math.BigDecimal;
 import java.net.SocketException;
 import java.net.URL;
 import java.net.UnknownHostException;
@@ -205,18 +206,32 @@ public class Bittrex {
 
 
 
-    public List<AssetBalance> getBalances() { // Returns all balances in your account
+    public List<AssetBalance> getAllAssets() { // Returns all balances in your account
 
         String balance = getJson(API_VERSION, ACCOUNT, "getbalances");
         List<AssetBalance> assetBalances = new ArrayList<>();
-        JsonObject jsonAllData = new JsonParser().parse(balance).getAsJsonObject();
-        JsonArray jsonResult = jsonAllData.get("result").getAsJsonArray();
+        JsonObject jsonAllAssets = new JsonParser().parse(balance).getAsJsonObject();
+        JsonArray jsonResult = jsonAllAssets.get("result").getAsJsonArray();
+
         for (int i = 0; i < jsonResult.size(); i++) {
             JsonObject jsonAsset = jsonResult.get(i).getAsJsonObject();
-            AssetBalance assetBalance = new AssetBalance();
-            assetBalance.setAsset(jsonAsset.get("Currency").getAsString());
-            assetBalance.setFree(jsonAsset.get("Available").getAsString());
-            assetBalance.setLocked(jsonAsset.get("Pending").getAsString());
+            AssetBalance assetBalance;
+            BigDecimal available = new BigDecimal(jsonAsset.get("Available").getAsString());
+            BigDecimal pending = new BigDecimal(jsonAsset.get("Pending").getAsString());
+
+            if (available.compareTo(BigDecimal.ZERO) > 0) {
+
+                assetBalance = new AssetBalance();
+                assetBalance.setAsset(jsonAsset.get("Currency").getAsString());
+                assetBalance.setFree(available.toString());
+
+                if (pending.compareTo(BigDecimal.ZERO) > 0) {
+                    assetBalance.setLocked(pending.toString());
+                }
+                else assetBalance.setLocked("0");
+
+                assetBalances.add(assetBalance);
+            }
         }
 
         return assetBalances;

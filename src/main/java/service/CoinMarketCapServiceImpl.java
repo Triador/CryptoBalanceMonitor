@@ -1,26 +1,41 @@
 package service;
 
 import Utils.JsonUtils;
+import Utils.PropertyHandler;
+import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
 import mapper.ModelCoinMarketCapMapper;
 import mapper.ModelMapperCoinMarketCapImpl;
 import model.CoinMarketCapTicker;
+import org.apache.http.HttpHeaders;
+import org.apache.http.client.HttpClient;
+import org.apache.http.client.methods.RequestBuilder;
+import org.apache.http.client.utils.URIBuilder;
+import org.apache.http.util.EntityUtils;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStreamReader;
+import java.io.*;
 import java.net.HttpURLConnection;
-import java.net.MalformedURLException;
-import java.net.ProtocolException;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.net.URL;
+import java.nio.charset.Charset;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 public class CoinMarketCapServiceImpl implements CoinMarketCapService {
 
     private final ModelCoinMarketCapMapper modelCoinMarketCapMapper = new ModelMapperCoinMarketCapImpl();
+    private HttpClient client;
 
-    public CoinMarketCapTicker getCoinMarketCapTicker() {
-        String url = "https://api.coinmarketcap.com/v1/ticker/bitcoin/";
-        JsonObject jsonObject = null;
+    public CoinMarketCapServiceImpl(HttpClient client) {
+        this.client = client;
+    }
+
+    public CoinMarketCapTicker getCoinMarketCapTicker(String coin) {
+        String url = "https://api.coinmarketcap.com/v1/ticker/" + coin + "/";
         CoinMarketCapTicker coinMarketCapTicker = null;
 
         try {
@@ -28,15 +43,8 @@ public class CoinMarketCapServiceImpl implements CoinMarketCapService {
             URL obj = new URL(url);
             HttpURLConnection con = (HttpURLConnection) obj.openConnection();
 
-            // optional default is GET
             con.setRequestMethod("GET");
-
-            //add request header
             con.setRequestProperty("Content-type", "application/json");
-
-            int responseCode = con.getResponseCode();
-            System.out.println("\nSending 'GET' request to URL : " + url);
-            System.out.println("Response Code : " + responseCode);
 
             BufferedReader in = new BufferedReader(
                     new InputStreamReader(con.getInputStream()));
@@ -47,17 +55,55 @@ public class CoinMarketCapServiceImpl implements CoinMarketCapService {
             }
             in.close();
 
-            JsonObject result = JsonUtils.convertStringToJson(sb.toString());
+            JsonObject result = JsonUtils.convertStringToJsonObject(sb.toString());
             coinMarketCapTicker = modelCoinMarketCapMapper.mapToCoinMarketCapTicker(result);
 
-        } catch (ProtocolException e) {
-            e.printStackTrace();
-        } catch (MalformedURLException e) {
-            e.printStackTrace();
         } catch (IOException e) {
             e.printStackTrace();
         }
 
         return coinMarketCapTicker;
+    }
+
+    public Map<String, CoinMarketCapTicker> getCoinMarketCapTickers() {
+        Map<String, CoinMarketCapTicker> coinMarketCapTickers = new HashMap<>();
+
+        try {
+
+            int start = 0;
+            BufferedWriter bw = new BufferedWriter(new FileWriter("coinmarketcap.json"));
+            bw.write("{");
+            for (int i = 0; i < 16; i++) {
+                URI address = new URIBuilder()
+                        .setScheme("https")
+                        .setHost("api.coinmarketcap.com")
+                        .setPath("v1/ticker/")
+                        .setParameter("start", String.valueOf(start))
+                        .build();
+
+                RequestBuilder request = RequestBuilder
+                        .get(address)
+                        .setCharset(Charset.defaultCharset())
+                        .addHeader(HttpHeaders.ACCEPT, "application/json");
+
+                JsonArray jsonCoinMarketCapTickers = new JsonParser().parse(EntityUtils.toString(
+                        this.client.execute(request.build()).getEntity()
+                )).getAsJsonArray();
+                for (int j = 0; j < jsonCoinMarketCapTickers.size(); j++) {
+                    CoinMarketCapTicker coinMarketCapTicker = modelCoinMarketCapMapper.mapToCoinMarketCapTicker(jsonCoinMarketCapTickers.get(j).getAsJsonObject());
+                    bw.write("\"" + coinMarketCapTicker.getSymbol() + "\": " + "\"" + coinMarketCapTicker.getId() + "\"" + ",");
+                    coinMarketCapTickers.put(coinMarketCapTicker.getSymbol(), coinMarketCapTicker);
+                }
+
+                start += 100;
+            }
+            bw.write("}");
+            bw.close();
+
+        } catch (IOException | URISyntaxException e) {
+            e.printStackTrace();
+        }
+
+        return coinMarketCapTickers;
     }
 }

@@ -1,6 +1,7 @@
 package bitfinex;
 
 import Utils.PropertyHandler;
+import com.binance.api.client.domain.account.AssetBalance;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
@@ -30,6 +31,7 @@ import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.List;
 
 public class Bitfinex {
 
@@ -156,6 +158,22 @@ public class Bitfinex {
         headers.add(new BasicHeader("bfx-signature", getAuthenticationSignature(address, nonce, body)));
 
         return Collections.unmodifiableCollection(headers);
+    }
+
+    public List<AssetBalance> getAllAssets() {
+
+        List<AssetBalance> assetBalances = new ArrayList<>();
+        JsonArray jsonAllAssets = post("/v2/auth/r/wallets");
+        for (int i = 0; i < jsonAllAssets.size(); i++) {
+            JsonArray jsonAsset = jsonAllAssets.get(i).getAsJsonArray();
+            AssetBalance assetBalance = new AssetBalance();
+            assetBalance.setAsset(jsonAsset.get(1).getAsString());
+            assetBalance.setFree(jsonAsset.get(2).getAsString());
+            assetBalance.setLocked(jsonAsset.get(3).getAsString());
+            assetBalances.add(assetBalance);
+        }
+
+        return assetBalances;
     }
 
 }

@@ -126,7 +126,7 @@ public class CoinMarketCapTicker {
         return percentChange7h;
     }
 
-    public void setPercentChange7h(String percentChange7h) {
+    public void setPercentChange7d(String percentChange7h) {
         this.percentChange7h = percentChange7h;
     }
 

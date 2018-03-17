@@ -1,7 +1,7 @@
 package mapper;
 
+import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
-import mapper.ModelCoinMarketCapMapper;
 import model.CoinMarketCapTicker;
 
 public class ModelMapperCoinMarketCapImpl implements ModelCoinMarketCapMapper {
@@ -9,21 +9,34 @@ public class ModelMapperCoinMarketCapImpl implements ModelCoinMarketCapMapper {
     public CoinMarketCapTicker mapToCoinMarketCapTicker(JsonObject jsonObject) {
 
         CoinMarketCapTicker coinMarketCapTicker = new CoinMarketCapTicker();
-        coinMarketCapTicker.setId(jsonObject.get("id").getAsString());
-        coinMarketCapTicker.setName(jsonObject.get("name").getAsString());
-        coinMarketCapTicker.setSymbol(jsonObject.get("symbol").getAsString());
-        coinMarketCapTicker.setRank(jsonObject.get("rank").getAsString());
-        coinMarketCapTicker.setPriceUSD(jsonObject.get("price_usd").getAsString());
-        coinMarketCapTicker.setPriceBTC(jsonObject.get("price_btc").getAsString());
-        coinMarketCapTicker.setVolumeUSD24h(jsonObject.get("24h_volume_usd").getAsString());
-        coinMarketCapTicker.setMarketCapUSD(jsonObject.get("market_cap_usd").getAsString());
-        coinMarketCapTicker.setAvailableSupply(jsonObject.get("available_supply").getAsString());
-        coinMarketCapTicker.setTotalSupply(jsonObject.get("total_supply").getAsString());
-        coinMarketCapTicker.setMaxSupply(jsonObject.get("max_supply").getAsString());
-        coinMarketCapTicker.setPercentChange1h(jsonObject.get("percent_change_1h").getAsString());
-        coinMarketCapTicker.setPercentChange24h(jsonObject.get("percent_change_24h").getAsString());
-        coinMarketCapTicker.setPercentChange7h(jsonObject.get("percent_change_7d").getAsString());
-        coinMarketCapTicker.setLastUpdated(jsonObject.get("last_updated").getAsString());
+        JsonElement jsonElement = jsonObject.get("id");
+        if (!jsonElement.isJsonNull()) coinMarketCapTicker.setId(jsonElement.getAsString());
+        jsonElement = jsonObject.get("name");
+        if (!jsonElement.isJsonNull()) coinMarketCapTicker.setName(jsonElement.getAsString());
+        jsonElement = jsonObject.get("symbol");
+        if (!jsonElement.isJsonNull()) coinMarketCapTicker.setSymbol(jsonElement.getAsString());
+        jsonElement = jsonObject.get("rank");
+        if (!jsonElement.isJsonNull()) coinMarketCapTicker.setRank(jsonElement.getAsString());
+        jsonElement = jsonObject.get("price_usd");
+        if (!jsonElement.isJsonNull()) coinMarketCapTicker.setPriceUSD(jsonElement.getAsString());
+        jsonElement = jsonObject.get("price_btc");
+        if (!jsonElement.isJsonNull()) coinMarketCapTicker.setPriceBTC(jsonElement.getAsString());
+        jsonElement = jsonObject.get("24h_volume_usd");
+        if (!jsonElement.isJsonNull()) coinMarketCapTicker.setVolumeUSD24h(jsonElement.getAsString());
+        jsonElement = jsonObject.get("market_cap_usd");
+        if (!jsonElement.isJsonNull()) coinMarketCapTicker.setMarketCapUSD(jsonElement.getAsString());
+        jsonElement = jsonObject.get("available_supply");
+        if (!jsonElement.isJsonNull()) coinMarketCapTicker.setAvailableSupply(jsonElement.getAsString());
+        jsonElement = jsonObject.get("max_supply");
+        if (!jsonElement.isJsonNull()) coinMarketCapTicker.setMaxSupply(jsonElement.getAsString());
+        jsonElement = jsonObject.get("percent_change_1h");
+        if (!jsonElement.isJsonNull()) coinMarketCapTicker.setPercentChange1h(jsonElement.getAsString());
+        jsonElement = jsonObject.get("percent_change_24h");
+        if (!jsonElement.isJsonNull()) coinMarketCapTicker.setPercentChange24h(jsonElement.getAsString());
+        jsonElement = jsonObject.get("percent_change_7d");
+        if (!jsonElement.isJsonNull()) coinMarketCapTicker.setPercentChange7d(jsonElement.getAsString());
+        jsonElement = jsonObject.get("last_updated");
+        if (!jsonElement.isJsonNull()) coinMarketCapTicker.setLastUpdated(jsonElement.getAsString());
 
         return coinMarketCapTicker;
     }
