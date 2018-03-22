@@ -3,12 +3,12 @@ package service;
 import bitfinex.Bitfinex;
 import bittrex.Bittrex;
 import com.binance.api.client.domain.account.AssetBalance;
-import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import hibtc.HitBTC;
 import org.apache.http.impl.client.HttpClients;
+import org.springframework.stereotype.Service;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -16,7 +16,8 @@ import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 
-public class BalanceCalculation {
+@Service
+public class BalanceServiceImpl implements BalanceService {
     private static final BinanceService binanceService = new BinanceServiceImpl();
     private static final Bittrex bittrex = new Bittrex();
     private static final Bitfinex bitfinex = new Bitfinex(HttpClients.createDefault());
@@ -24,7 +25,8 @@ public class BalanceCalculation {
     private static final EtherScannerService etherScannerService = new EtherScannerServiceImpl();
     private static final CoinMarketCapService coinMarketCapService = new CoinMarketCapServiceImpl(HttpClients.createDefault());
 
-    public static BigDecimal getTotalBalance() {
+    @Override
+    public BigDecimal getTotalBalance() {
 
         JsonObject coinmarketcapJson = getCoinMarketCapJsonObject();
 
@@ -50,15 +52,8 @@ public class BalanceCalculation {
         return totalBalance.setScale(1, 1);
     }
 
-    public static BigDecimal getBinanceBalance() {
-
-        JsonObject coinmarketcapJson = getCoinMarketCapJsonObject();
-        List<AssetBalance> binanceBalance = binanceService.getAllAssets();
-
-        return getExchangeTotalBalance(binanceBalance, coinmarketcapJson).setScale(1, 1);
-    }
-
-    public static BigDecimal getBitfinexBalance() {
+    @Override
+    public BigDecimal getBitfinexBalance() {
 
         JsonObject coinmarketcapJson = getCoinMarketCapJsonObject();
         List<AssetBalance> bitfinexBalance = bitfinex.getAllAssets();
@@ -66,7 +61,8 @@ public class BalanceCalculation {
         return getExchangeTotalBalance(bitfinexBalance, coinmarketcapJson).setScale(1, 1);
     }
 
-    public static BigDecimal getBittrexBalance() {
+    @Override
+    public BigDecimal getBittrexBalance() {
 
         JsonObject coinmarketcapJson = getCoinMarketCapJsonObject();
         List<AssetBalance> bittrexBalance = bittrex.getAllAssets();
@@ -74,7 +70,7 @@ public class BalanceCalculation {
         return getExchangeTotalBalance(bittrexBalance, coinmarketcapJson).setScale(1, 1);
     }
 
-    public static BigDecimal getHitBTCBalance() {
+    public BigDecimal getHitBTCBalance() {
 
         JsonObject coinmarketcapJson = getCoinMarketCapJsonObject();
         List<AssetBalance> HitBTCBalance = hitBTC.getAllAssets();
@@ -82,7 +78,8 @@ public class BalanceCalculation {
         return getExchangeTotalBalance(HitBTCBalance, coinmarketcapJson).setScale(1, 1);
     }
 
-    public static BigDecimal getMyEtherWalletBalance() {
+    @Override
+    public BigDecimal getMyEtherWalletBalance() {
 
         BigDecimal myEtherWalletBalance = etherScannerService.getMyEtherWalletBalance();
         BigDecimal usdPriceForETH = new BigDecimal(coinMarketCapService.getCoinMarketCapTicker("ethereum").getPriceUSD());
@@ -90,9 +87,9 @@ public class BalanceCalculation {
         return myEtherWalletBalance.multiply(usdPriceForETH).setScale(1, 1);
     }
 
-    private static JsonObject getCoinMarketCapJsonObject() {
+    private JsonObject getCoinMarketCapJsonObject() {
 
-        InputStream is = BalanceCalculation.class.getClassLoader().getResourceAsStream("coinmarketcap.json");
+        InputStream is = BalanceServiceImpl.class.getClassLoader().getResourceAsStream("coinmarketcap.json");
         StringBuilder data = new StringBuilder();
         try {
             while (is.available() > 0) {
@@ -104,7 +101,7 @@ public class BalanceCalculation {
         return new JsonParser().parse(data.toString()).getAsJsonObject();
     }
 
-    private static BigDecimal getExchangeTotalBalance(List<AssetBalance> assetBalances, JsonObject coinmarketcapJson) {
+    private BigDecimal getExchangeTotalBalance(List<AssetBalance> assetBalances, JsonObject coinmarketcapJson) {
         BigDecimal totalBalance = new BigDecimal(0);
         for (AssetBalance assetBalance: assetBalances) {
             JsonElement jsonElement = coinmarketcapJson.get(assetBalance.getAsset());
