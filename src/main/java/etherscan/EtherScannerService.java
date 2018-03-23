@@ -1,4 +1,4 @@
-package service;
+package etherscan;
 
 import java.math.BigDecimal;
 

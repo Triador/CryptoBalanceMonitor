@@ -1,9 +1,10 @@
-package service;
+package etherscan;
 
 import Utils.ConvertUtils;
 import Utils.JsonUtils;
 import Utils.PropertyHandler;
 import com.google.gson.JsonObject;
+import etherscan.EtherScannerService;
 
 import java.io.BufferedReader;
 import java.io.IOException;

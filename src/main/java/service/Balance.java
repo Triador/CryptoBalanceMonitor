@@ -3,5 +3,5 @@ package service;
 import java.math.BigDecimal;
 
 public interface Balance {
-    BigDecimal getBalanec();
+    BigDecimal getBalance();
 }
