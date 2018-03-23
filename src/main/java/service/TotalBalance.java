@@ -19,7 +19,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 
-public class TotalBalance implements Balance {
+public class TotalBalance implements BalanceService {
 
     private static final BinanceService binanceService = new BinanceServiceImpl();
     private static final Bittrex bittrex = new Bittrex();

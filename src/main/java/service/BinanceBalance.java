@@ -10,7 +10,7 @@ import java.util.List;
 
 import static Utils.BalanceUtils.getCoinMarketCapJsonObject;
 
-public class BinanceBalance implements Balance {
+public class BinanceBalance implements BalanceService {
 
     private final BinanceService binanceService;
 

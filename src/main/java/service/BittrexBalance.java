@@ -8,7 +8,7 @@ import com.google.gson.JsonObject;
 import java.math.BigDecimal;
 import java.util.List;
 
-public class BittrexBalance implements Balance {
+public class BittrexBalance implements BalanceService {
 
     private final Bittrex bittrex;
 

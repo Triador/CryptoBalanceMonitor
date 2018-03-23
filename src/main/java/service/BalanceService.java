@@ -2,6 +2,6 @@ package service;
 
 import java.math.BigDecimal;
 
-public interface Balance {
+public interface BalanceService {
     BigDecimal getBalance();
 }

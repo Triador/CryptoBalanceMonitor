@@ -8,7 +8,7 @@ import com.google.gson.JsonObject;
 import java.math.BigDecimal;
 import java.util.List;
 
-public class BitfinexBalance implements Balance {
+public class BitfinexBalance implements BalanceService {
 
     private final Bitfinex bitfinex;
 

@@ -6,7 +6,7 @@ import etherscan.EtherScannerService;
 
 import java.math.BigDecimal;
 
-public class MyEtherWalletBalance implements Balance {
+public class MyEtherWalletBalance implements BalanceService {
 
     private final EtherScannerService etherScannerService;
     private final CoinMarketCapService coinMarketCapService;

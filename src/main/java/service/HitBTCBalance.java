@@ -8,7 +8,7 @@ import hibtc.HitBTC;
 import java.math.BigDecimal;
 import java.util.List;
 
-public class HitBTCBalance implements Balance {
+public class HitBTCBalance implements BalanceService {
 
     private final HitBTC hitBTC;
 

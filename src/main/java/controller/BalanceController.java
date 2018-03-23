@@ -10,7 +10,6 @@ import etherscan.EtherScannerService;
 import etherscan.EtherScannerServiceImpl;
 import hibtc.HitBTC;
 import org.apache.http.impl.client.HttpClients;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -27,9 +26,6 @@ public class BalanceController {
     private static final HitBTC hitBTC = new HitBTC(HttpClients.createDefault());
     private static final EtherScannerService etherScannerService = new EtherScannerServiceImpl();
     private static final CoinMarketCapService coinMarketCapService = new CoinMarketCapServiceImpl(HttpClients.createDefault());
-
-    @Autowired
-    private BalanceService balanceService;
 
     @PostMapping
 }
