@@ -7,6 +7,11 @@ public class Balance {
     private String exchangeName;
     private BigDecimal amount;
 
+    public Balance(String exchangeName, BigDecimal amount) {
+        this.exchangeName = exchangeName;
+        this.amount = amount;
+    }
+
     public String getExchangeName() {
         return exchangeName;
     }
