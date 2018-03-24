@@ -1,4 +1,4 @@
-package service;
+package coinmarketcap;
 
 import model.CoinMarketCapTicker;
 

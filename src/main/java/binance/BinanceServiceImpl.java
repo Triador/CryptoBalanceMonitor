@@ -1,6 +1,7 @@
-package service;
+package binance;
 
 import Utils.PropertyHandler;
+import binance.BinanceService;
 import com.binance.api.client.BinanceApiClientFactory;
 import com.binance.api.client.BinanceApiRestClient;
 import com.binance.api.client.domain.account.AssetBalance;

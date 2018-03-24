@@ -1,4 +1,4 @@
-package service;
+package binance;
 
 import com.binance.api.client.domain.account.AssetBalance;
 

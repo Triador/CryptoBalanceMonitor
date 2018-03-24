@@ -1,4 +1,4 @@
-package service;
+package coinmarketcap;
 
 import Utils.JsonUtils;
 import Utils.PropertyHandler;
