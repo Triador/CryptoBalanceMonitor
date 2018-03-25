@@ -1,10 +1,9 @@
-package etherscan;
+package com.triador.cryptobalancemonitor.etherscan;
 
-import Utils.ConvertUtils;
-import Utils.JsonUtils;
-import Utils.PropertyHandler;
+import com.triador.cryptobalancemonitor.Utils.ConvertUtils;
+import com.triador.cryptobalancemonitor.Utils.JsonUtils;
+import com.triador.cryptobalancemonitor.Utils.PropertyHandler;
 import com.google.gson.JsonObject;
-import etherscan.EtherScannerService;
 
 import java.io.BufferedReader;
 import java.io.IOException;
