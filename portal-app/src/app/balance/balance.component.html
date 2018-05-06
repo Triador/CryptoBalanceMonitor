@@ -1,0 +1,34 @@
+<!-- <div>
+
+  <table class="table table-striped">
+    <thead>
+      <tr>
+        <th>Source</th>
+        <th>Amount</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr *ngFor="let balance of balances">
+        <td>{{balance.exchangeName}}</td>
+        <td>{{balance.amount}}</td>
+      </tr>
+    </tbody>
+  </table>
+</div> -->
+  <div class="table-title">
+    <h3>Hello Ildar</h3>
+  </div>
+  <table class="table-fill">
+    <thead>
+      <tr>
+        <th class="text-left">Source</th>
+        <th class="text-left">Amount(USD)</th>
+      </tr>
+    </thead>
+    <tbody class="table-hover">
+      <tr *ngFor="let balance of balances">
+        <td class="text-left">{{balance.exchangeName}}</td>
+        <td class="text-left">{{balance.amount}}</td>
+      </tr>
+    </tbody>
+  </table>
